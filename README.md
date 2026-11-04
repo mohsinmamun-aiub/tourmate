@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎒 TourMate BD — Campus Tour-Mate Network
 
-## Getting Started
+The first verified student tour-mate web platform in Bangladesh. Built with **Next.js 16**, **Tailwind CSS**, and **Supabase (PostgreSQL)**.
 
-First, run the development server:
+---
+
+## 🚀 Quick Start (Running Locally)
+
+### 1. Start the Development Server
+Open your terminal inside this folder and run:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🗄️ Setting Up Free Supabase Backend (2 Minutes)
 
-## Learn More
+1. Go to [https://supabase.com](https://supabase.com) and create a free account & project.
+2. Open the **SQL Editor** in your Supabase dashboard.
+3. Open the file `supabase_schema.sql` in this folder, copy all contents, and click **Run**.
+4. Go to **Project Settings** -> **API** in Supabase and copy:
+   - **Project URL**
+   - **Anon / Public Key**
+5. Open `.env.local` in this folder and paste them:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌟 Key Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Dual Verification Pipeline:**
+   - **Instant Verification:** Institutional emails (`.edu`, `.edu.bd`, `.ac.bd` like DU, BUET, NSU, BRACU, AIUB, IUT, etc.) are verified automatically.
+   - **Student ID Card Upload:** Students from National University and other colleges can upload their student ID photo for manual admin approval.
+2. **Tour Discovery Feed:**
+   - Filter by destination (Sajek, Saint Martin, Cox's Bazar, Srimangal, etc.).
+   - Filter by budget in BDT and group preferences (**Girls-Only Trips 🌸**, Boys-Only, or Mixed).
+3. **Plan & Host Tours:**
+   - Set dates, budgets, group limits, and itineraries.
+   - Add a private WhatsApp group invite link that is **hidden by default** and **only unlocked for approved members**.
+4. **Interactive Dashboard:**
+   - Manage incoming join requests (Accept / Decline).
+   - Track tours you applied to join.
+5. **Admin Verification Desk:**
+   - Located at `/admin/verify` to approve or reject student ID cards.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🌐 Deploy to Vercel for Free (100% Free Hosting)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push this project to your GitHub account:
+   ```bash
+   git add .
+   git commit -m "TourMate BD ready for launch"
+   git branch -M main
+   git remote add origin https://github.com/your-username/tourmate.git
+   git push -u origin main
+   ```
+2. Log into [Vercel](https://vercel.com) with GitHub.
+3. Click **"New Project"**, select `tourmate`, add the 2 environment variables (`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`), and click **Deploy**.
+4. Your site will be live across the world at `https://tourmate.vercel.app`!
