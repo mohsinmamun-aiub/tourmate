@@ -4,75 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { POPULAR_DESTINATIONS } from "@/lib/constants/universities";
+import { SAMPLE_TOURS } from "@/lib/constants/sampleTours";
 import { MapPin, Calendar, Users, Wallet, Plus, Filter, ShieldCheck } from "lucide-react";
 import type { Tour } from "@/types";
-
-// Starter sample tours so the user sees a rich UI even before populating their database
-const SAMPLE_TOURS: Tour[] = [
-  {
-    id: "sample-1",
-    creator_id: "demo-1",
-    title: "Sajek Valley Cloud Chasing & Helipad Camping ☁️",
-    destination: "Sajek Valley",
-    departure_date: "2026-11-20",
-    return_date: "2026-11-23",
-    estimated_budget_bdt: 4500,
-    max_members: 6,
-    gender_preference: "any",
-    description: "Planning a 3-day weekend trip to Sajek Valley. We will take a Chander Gari from Khagrachhari, stay in a wooden cottage with mountain view, and catch sunrise at the helipad.",
-    status: "open",
-    created_at: new Date().toISOString(),
-    profiles: {
-      id: "demo-1",
-      full_name: "Mahir Faysal",
-      university_name: "BUET",
-      is_verified: true,
-      created_at: new Date().toISOString(),
-    },
-  },
-  {
-    id: "sample-2",
-    creator_id: "demo-2",
-    title: "Saint Martin Island Coral Beach & BBQ Night 🌊",
-    destination: "Saint Martin's Island",
-    departure_date: "2026-12-05",
-    return_date: "2026-12-09",
-    estimated_budget_bdt: 6200,
-    max_members: 8,
-    gender_preference: "any",
-    description: "Ship ride from Teknaf, staying at western beach cottages. Cycling around Chera Dwip, live fish BBQ on the beach, and stargazing at night.",
-    status: "open",
-    created_at: new Date().toISOString(),
-    profiles: {
-      id: "demo-2",
-      full_name: "Anika Tabassum",
-      university_name: "University of Dhaka (DU)",
-      is_verified: true,
-      created_at: new Date().toISOString(),
-    },
-  },
-  {
-    id: "sample-3",
-    creator_id: "demo-3",
-    title: "Girls-Only Hiking & Tea Garden Exploration in Srimangal 🍃",
-    destination: "Srimangal & Sylhet",
-    departure_date: "2026-11-27",
-    return_date: "2026-11-29",
-    estimated_budget_bdt: 3200,
-    max_members: 5,
-    gender_preference: "female_only",
-    description: "Safe girls-only weekend getaway! Visiting Lawachara National park, Seven Layer tea cabin, and bicycling through lush tea estates.",
-    status: "open",
-    created_at: new Date().toISOString(),
-    profiles: {
-      id: "demo-3",
-      full_name: "Sumaiya Rahman",
-      university_name: "BRAC University",
-      is_verified: true,
-      created_at: new Date().toISOString(),
-    },
-  },
-];
 
 export default function ToursPage() {
   const supabase = createClient();
@@ -102,10 +36,11 @@ export default function ToursPage() {
           .order("created_at", { ascending: false });
 
         if (error || !data || data.length === 0) {
-          // If no database tours yet, display the sample tours
+          // If no database tours yet, display the sample starter tours
           setTours(SAMPLE_TOURS);
         } else {
-          setTours(data as Tour[]);
+          // Merge real tours with starter tours so user always has rich content
+          setTours([...(data as Tour[]), ...SAMPLE_TOURS]);
         }
       } catch {
         setTours(SAMPLE_TOURS);

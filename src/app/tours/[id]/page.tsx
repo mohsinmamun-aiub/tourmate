@@ -4,8 +4,9 @@ import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { SAMPLE_TOURS } from "@/lib/constants/sampleTours";
 import { MapPin, Calendar, Users, Wallet, ShieldCheck, MessageCircle, AlertTriangle, ArrowLeft, CheckCircle2 } from "lucide-react";
-import type { Tour, TourRequest, Profile } from "@/types";
+import type { Tour, TourRequest } from "@/types";
 
 function TourDetailsContent() {
   const params = useParams();
@@ -31,38 +32,52 @@ function TourDetailsContent() {
         if (user) {
           setCurrentUser(user);
 
-          // Check if already requested
-          const { data: req } = await supabase
-            .from("tour_requests")
-            .select("*")
-            .eq("tour_id", tourId)
-            .eq("applicant_id", user.id)
+          // Check if already requested in Supabase
+          if (!tourId.startsWith("sample-")) {
+            const { data: req } = await supabase
+              .from("tour_requests")
+              .select("*")
+              .eq("tour_id", tourId)
+              .eq("applicant_id", user.id)
+              .maybeSingle();
+
+            if (req) setMyRequest(req as TourRequest);
+          }
+        }
+
+        let foundTour: Tour | null = null;
+
+        // 1. Try finding in Supabase
+        if (!tourId.startsWith("sample-")) {
+          const { data: tourData } = await supabase
+            .from("tours")
+            .select(`
+              *,
+              profiles:creator_id (
+                id,
+                full_name,
+                university_name,
+                department,
+                is_verified
+              )
+            `)
+            .eq("id", tourId)
             .maybeSingle();
 
-          if (req) setMyRequest(req as TourRequest);
+          if (tourData) foundTour = tourData as Tour;
         }
 
-        // Fetch tour details
-        const { data: tourData } = await supabase
-          .from("tours")
-          .select(`
-            *,
-            profiles:creator_id (
-              id,
-              full_name,
-              university_name,
-              department,
-              is_verified
-            )
-          `)
-          .eq("id", tourId)
-          .single();
-
-        if (tourData) {
-          setTour(tourData as Tour);
+        // 2. If not found in Supabase (or is a sample tour), load from SAMPLE_TOURS
+        if (!foundTour) {
+          const sample = SAMPLE_TOURS.find((s) => s.id === tourId);
+          if (sample) foundTour = sample;
         }
+
+        setTour(foundTour);
       } catch (e) {
         console.error("Error loading tour", e);
+        const sample = SAMPLE_TOURS.find((s) => s.id === tourId);
+        if (sample) setTour(sample);
       } finally {
         setLoading(false);
       }
@@ -73,13 +88,30 @@ function TourDetailsContent() {
 
   const handleJoinRequest = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmittingJoin(true);
+    setJoinStatusMsg("");
+
+    // If it's a sample starter tour, simulate request smoothly
+    if (tourId.startsWith("sample-")) {
+      setTimeout(() => {
+        setMyRequest({
+          id: "req-demo",
+          tour_id: tourId,
+          applicant_id: "demo-user",
+          status: "pending",
+          message: joinMessage,
+          created_at: new Date().toISOString(),
+        });
+        setJoinStatusMsg("🎉 Join request sent! In real trips, the organizer receives this in their dashboard.");
+        setSubmittingJoin(false);
+      }, 600);
+      return;
+    }
+
     if (!currentUser) {
       window.location.href = "/login";
       return;
     }
-
-    setSubmittingJoin(true);
-    setJoinStatusMsg("");
 
     try {
       const { data, error } = await supabase
@@ -111,8 +143,8 @@ function TourDetailsContent() {
   if (!tour) {
     return (
       <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
-        <h2 className="text-xl font-bold">Tour not found or demo preview</h2>
-        <p className="text-sm text-slate-500">This tour may have expired or is a demo listing.</p>
+        <h2 className="text-xl font-bold">Tour not found</h2>
+        <p className="text-sm text-slate-500">This tour may have expired or been removed.</p>
         <Link href="/tours" className="inline-block text-emerald-600 font-bold hover:underline">
           ← Back to All Tours
         </Link>
@@ -237,14 +269,14 @@ function TourDetailsContent() {
         </div>
 
         {/* Unlocked WhatsApp link for accepted members */}
-        {isAccepted && tour.whatsapp_group_link && (
+        {(isAccepted || tourId.startsWith("sample-")) && tour.whatsapp_group_link && (
           <div className="p-6 rounded-2xl bg-emerald-600 text-white space-y-3">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-6 h-6" />
-              <h4 className="font-bold text-lg">You are an accepted tourmate!</h4>
+              <h4 className="font-bold text-lg">Accepted Tourmates Coordination</h4>
             </div>
             <p className="text-xs text-emerald-100">
-              The organizer has accepted your join request. Join the private WhatsApp coordination group below:
+              Once an organizer approves your request, the private group coordination link unlocks below:
             </p>
             <a
               href={tour.whatsapp_group_link}
@@ -253,7 +285,7 @@ function TourDetailsContent() {
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-700 font-bold rounded-xl text-xs hover:bg-emerald-50 transition-all shadow-md"
             >
               <MessageCircle className="w-4 h-4" />
-              Join Private WhatsApp Group
+              Open WhatsApp Coordination Group
             </a>
           </div>
         )}
@@ -289,7 +321,7 @@ function TourDetailsContent() {
               </h4>
               <textarea
                 rows={3}
-                placeholder="Introduce yourself (e.g. your university, year of study, travel experience, and why you want to join this trip)..."
+                placeholder="Introduce yourself (e.g. your university, department, travel experience, and why you want to join this trip)..."
                 value={joinMessage}
                 onChange={(e) => setJoinMessage(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
