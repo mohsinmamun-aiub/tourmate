@@ -50,18 +50,4 @@ Then open [http://localhost:3000](http://localhost:3000) in your browser.
 5. **Admin Verification Desk:**
    - Located at `/admin/verify` to approve or reject student ID cards.
 
----
 
-## 🌐 Deploy to Vercel for Free (100% Free Hosting)
-
-1. Push this project to your GitHub account:
-   ```bash
-   git add .
-   git commit -m "TourMate BD ready for launch"
-   git branch -M main
-   git remote add origin https://github.com/your-username/tourmate.git
-   git push -u origin main
-   ```
-2. Log into [Vercel](https://vercel.com) with GitHub.
-3. Click **"New Project"**, select `tourmate`, add the 2 environment variables (`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`), and click **Deploy**.
-4. Your site will be live across the world at `https://tourmate.vercel.app`!
