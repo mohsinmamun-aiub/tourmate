@@ -44,6 +44,11 @@ export default function RegisterPage() {
         throw new Error(authError?.message || "Failed to create user account");
       }
 
+      // Check if user already registered previously
+      if (authData.user.identities && authData.user.identities.length === 0) {
+        throw new Error("This email is already registered! Please log in instead.");
+      }
+
       let idCardUrl = "";
 
       // 2. If student ID photo is provided, upload to Supabase storage
@@ -59,20 +64,23 @@ export default function RegisterPage() {
         }
       }
 
-      // 3. Insert profile into the database
+      // 3. Insert or update profile into the database (upsert prevents duplicate key errors)
       const isAutoVerified = hasEduDomain;
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: authData.user.id,
-        full_name: fullName.trim(),
-        university_name: university,
-        department: department.trim() || null,
-        student_id: studentId.trim(),
-        is_verified: isAutoVerified,
-        verification_method: isAutoVerified ? "edu_email" : "id_card",
-        id_card_url: idCardUrl || null,
-        gender,
-        phone_number: phoneNumber.trim() || null,
-      });
+      const { error: profileError } = await supabase.from("profiles").upsert(
+        {
+          id: authData.user.id,
+          full_name: fullName.trim(),
+          university_name: university,
+          department: department.trim() || null,
+          student_id: studentId.trim(),
+          is_verified: isAutoVerified,
+          verification_method: isAutoVerified ? "edu_email" : "id_card",
+          id_card_url: idCardUrl || null,
+          gender,
+          phone_number: phoneNumber.trim() || null,
+        },
+        { onConflict: "id" }
+      );
 
       if (profileError) {
         throw new Error(`Profile setup error: ${profileError.message}`);
