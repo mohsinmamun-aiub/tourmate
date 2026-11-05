@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Compass, PlusCircle, User, ShieldCheck, LogOut, ShieldAlert } from "lucide-react";
+import { isAdminEmail } from "@/lib/constants/admin";
+import { Compass, PlusCircle, User, ShieldCheck, LogOut, ShieldAlert, Shield } from "lucide-react";
 import type { Profile } from "@/types";
 
 export default function Navbar() {
   const supabase = createClient();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,6 +18,7 @@ export default function Navbar() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          setUserEmail(user.email ?? null);
           const { data } = await supabase
             .from("profiles")
             .select("*")
@@ -43,8 +46,11 @@ export default function Navbar() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setUserEmail(null);
     window.location.href = "/";
   };
+
+  const isAdmin = isAdminEmail(userEmail);
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
@@ -80,6 +86,15 @@ export default function Navbar() {
               My Trips
             </Link>
           )}
+          {isAdmin && (
+            <Link
+              href="/admin/verify"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 rounded-xl text-xs font-bold border border-purple-300 dark:border-purple-800 hover:bg-purple-200 transition-all shadow-sm"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              Admin Desk
+            </Link>
+          )}
         </nav>
 
         {/* Auth / Profile Area */}
@@ -91,11 +106,16 @@ export default function Navbar() {
                   {profile.full_name}
                 </span>
                 <span className="text-xs text-slate-500">
-                  {profile.university_name}
+                  {isAdmin ? "Super Administrator" : profile.university_name}
                 </span>
               </div>
 
-              {profile.is_verified ? (
+              {isAdmin ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-300">
+                  <Shield className="w-3.5 h-3.5" />
+                  Admin
+                </span>
+              ) : profile.is_verified ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Verified
