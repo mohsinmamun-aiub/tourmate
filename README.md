@@ -14,7 +14,5 @@
 4. **Interactive Dashboard:**
    - Manage incoming join requests (Accept / Decline).
    - Track tours you applied to join.
-5. **Admin Verification Desk:**
-   - Located at `/admin/verify` to approve or reject student ID cards.
 
 
